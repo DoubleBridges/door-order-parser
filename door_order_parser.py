@@ -24,4 +24,7 @@ for line in lines:
     else:
         page_dir[current_key]["data"].append(line)
 
-print(page_dir)
+for section in page_dir:
+    print(section)
+    for key in page_dir[section]:
+        print("key = ", key, page_dir[section][key])
