@@ -5,9 +5,8 @@ import pprint
 
 def get_text_lines(pdf) -> list:
     """
-    Extract lines of text ffrom generated door report
+    Extract lines of text from generated door report
     """
-
     lines = []
 
     for page_layout in extract_pages(pdf):
@@ -37,8 +36,6 @@ class JobDetails:
         self.order_date = date
         self.door_styles = styles
 
-    # def __str__(self)
-
 
 def load_job_object(text_line_objs: list) -> JobDetails:
     job = JobDetails()
@@ -63,10 +60,10 @@ def load_job_object(text_line_objs: list) -> JobDetails:
             job.door_styles[curr_style]["profiles"].append(text)
         elif height == door_type_height:
             curr_type = text
-            job.door_styles[curr_style]["types"][text] = []
+            job.door_styles[curr_style]["types"][text] = {"lines": [], "sizes": {}}
         else:
             if curr_type != "" and curr_style != "" and "Created" not in text:
-                job.door_styles[curr_style]["types"][curr_type].append((line, line.x0))
+                job.door_styles[curr_style]["types"][curr_type]["lines"].append(line)
 
     return job
 
@@ -76,3 +73,15 @@ job = load_job_object(lines)
 pp = pprint.PrettyPrinter(indent=2)
 pp.pprint(job.door_styles)
 pp.pprint(job)
+
+
+qty_xpos_range = range(73, 93)
+
+for style in job.door_styles:
+    for door_type in job.door_styles[style]["types"]:
+        for line in job.door_styles[style]["types"][door_type]["lines"]:
+            text = line.get_text().replace("\n", "")
+            if text.strip().isdigit() and int(line.x0) in qty_xpos_range:
+                print("qty", text)
+            if "x" in text and text[0].isdigit():
+                print("size = ", text)
