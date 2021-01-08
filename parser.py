@@ -45,7 +45,7 @@ def load_job_object(text_line_objs: list) -> JobDetails:
     for line in text_line_objs:
         height = round(line.height, 0)
         text = line.get_text().replace("\n", "")
-        if height == title_section_height:
+        if height == title_section_height or "Created" in text:
             continue
         elif "Job" in text:
             job.name = get_name_in_brackets(text)
@@ -60,28 +60,47 @@ def load_job_object(text_line_objs: list) -> JobDetails:
             job.door_styles[curr_style]["profiles"].append(text)
         elif height == door_type_height:
             curr_type = text
-            job.door_styles[curr_style]["types"][text] = {"lines": [], "sizes": {}}
+            job.door_styles[curr_style]["types"][text] = {"lines": [], "sizes": []}
         else:
-            if curr_type != "" and curr_style != "" and "Created" not in text:
+            if curr_type != "" and curr_style != "":
                 job.door_styles[curr_style]["types"][curr_type]["lines"].append(line)
 
     return job
 
 
-lines = get_text_lines("sample2.pdf")
-job = load_job_object(lines)
+def get_door_sizes_from_line_objs(job_obj: JobDetails) -> None:
+
+    qty_xpos_range = range(73, 93)
+
+    for style in job_obj.door_styles:
+        for door_type in job_obj.door_styles[style]["types"]:
+            qty_ypos = {}
+            size_and_ypos = []
+            for line in job_obj.door_styles[style]["types"][door_type]["lines"]:
+                text = line.get_text().replace("\n", "")
+                ypos = round(line.y0, 2)
+                if text.strip().isdigit() and int(line.x0) in qty_xpos_range:
+                    qty_ypos[ypos] = text
+                if "x" in text and text[0].isdigit():
+                    size_and_ypos.append((ypos, text))
+
+            sizes = job_obj.door_styles[style]["types"][door_type]["sizes"]
+            for (pos, size) in size_and_ypos:
+                sizes.append({"qty": qty_ypos[pos], "size": size, "pos": pos})
+
+            sizes = sorted(sizes, key=lambda item: item["pos"])
+
+            sizes.reverse()
+            job_obj.door_styles[style]["types"][door_type]["sizes"] = sizes
+            del job_obj.door_styles[style]["types"][door_type]["lines"]
+
+
+lines: list = get_text_lines("sample.pdf")
+job: JobDetails = load_job_object(lines)
+get_door_sizes_from_line_objs(job)
+
 pp = pprint.PrettyPrinter(indent=2)
+
+pp.pprint(job.name)
+pp.pprint(job.order_date)
 pp.pprint(job.door_styles)
-pp.pprint(job)
-
-
-qty_xpos_range = range(73, 93)
-
-for style in job.door_styles:
-    for door_type in job.door_styles[style]["types"]:
-        for line in job.door_styles[style]["types"][door_type]["lines"]:
-            text = line.get_text().replace("\n", "")
-            if text.strip().isdigit() and int(line.x0) in qty_xpos_range:
-                print("qty", text)
-            if "x" in text and text[0].isdigit():
-                print("size = ", text)

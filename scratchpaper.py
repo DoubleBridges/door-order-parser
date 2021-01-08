@@ -13,7 +13,7 @@ class JobDetails(
         applied_and_finished_ends: [
             {
                 qty: int,
-                widht: int,
+                width: int,
                 height: int,
             },
             ...
@@ -21,7 +21,7 @@ class JobDetails(
         doors: [
             {
                 qty: int,
-                widht: int,
+                width: int,
                 height: int,
             },
             ...
@@ -29,7 +29,7 @@ class JobDetails(
         drawers: [
             {
                 qty: int,
-                widht: int,
+                width: int,
                 height: int,
             },
             ...
