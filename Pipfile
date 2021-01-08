@@ -8,6 +8,7 @@ black = "*"
 
 [packages]
 "pdfminer.six" = "20201018"
+reportlab = "*"
 
 [requires]
 python_version = "3.9.0"
