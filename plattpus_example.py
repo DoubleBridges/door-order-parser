@@ -13,7 +13,6 @@ PAGE_HEIGHT = defaultPageSize[1]
 print(canvas.getAvailableFonts())
 PAGE_WIDTH = defaultPageSize[0]
 LEFT_MARGIN = 20
-LINE_HEIGHT = 16
 styles = getSampleStyleSheet()
 
 Title = "ORDER FORM"
@@ -31,28 +30,27 @@ def myFirstPage(canvas, doc):
     canvas.setFont("Helvetica-Bold", 16)
     canvas.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - 54, Title)
     canvas.setFont("Helvetica", 9)
-    canvas.drawString(20, PAGE_HEIGHT - 120, "Customer: ")
     canvas.drawString(inch, 0.75 * inch, "First Page / %s" % pageinfo)
     canvas.restoreState()
 
 
-# def myLaterPages(canvas, doc):
-#     canvas.saveState()
-#     canvas.setFont("Helvetica", 9)
-#     canvas.drawString(inch, 0.75 * inch, "Page %d %s" % (doc.page, pageinfo))
-#     canvas.restoreState()
+def myLaterPages(canvas, doc):
+    canvas.saveState()
+    canvas.setFont("Times-Roman", 9)
+    canvas.drawString(inch, 0.75 * inch, "Page %d %s" % (doc.page, pageinfo))
+    canvas.restoreState()
 
 
 def go():
     doc = SimpleDocTemplate("./reports/phello.pdf")
     Story = [Spacer(1, 2 * inch)]
-    style = styles["Normal"]
-    for i in range(2):
+    style = styles["Heading1"]
+    for i in range(100):
         bogustext = ("This is Paragraph number %s. " % i) * 20
         p = Paragraph(bogustext, style)
         Story.append(p)
         Story.append(Spacer(1, 0.2 * inch))
-    doc.build(Story, onFirstPage=myFirstPage)
+    doc.build(Story, onFirstPage=myFirstPage, onLaterPages=myLaterPages)
 
 
 go()
