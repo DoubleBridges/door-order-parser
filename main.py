@@ -1,9 +1,9 @@
-from parser import JobDetails
+from parser.parser import JobDetails
 from pprint import PrettyPrinter
-from report_writer import generate_order
+from report_writer.report_writer import generate_order
 
 
-job = JobDetails("sample.pdf")
+job = JobDetails("sample_input/sample.pdf")
 
 pp = PrettyPrinter(indent=2)
 
