@@ -3,19 +3,15 @@ from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
 from reportlab.platypus import SimpleDocTemplate, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus.paragraph import Paragraph
-from reportlab.platypus.paraparser import ParaFrag
 from reportlab.rl_config import defaultPageSize
 from reportlab.lib.units import inch
 from reportlab.platypus.flowables import Flowable
 from reportlab.lib.colors import tan, green
 
-from parser import parse_door_report
+# from parser import parse_door_report
 
 
-job = parse_door_report("sample2.pdf")
-
-c = canvas.Canvas("font-colors.pdf", pagesize=LETTER)
+# job = parse_door_report("sample.pdf")
 
 
 def generate_order(job, d_style, d_type, doors=[], drawers=[]):
@@ -29,10 +25,7 @@ def generate_order(job, d_style, d_type, doors=[], drawers=[]):
     SPECIES = d_style.split("-")[-1]
     STYLE = d_style.split("-")[0]
 
-    styles = getSampleStyleSheet()
-
-    Title = "ORDER FORM"
-    pageinfo = "platypus example"
+    c = canvas.Canvas("font-colors.pdf", pagesize=LETTER)
 
     def myFirstPage(c, doc):
         cursor = CURSOR_HEIGHT
@@ -46,7 +39,7 @@ def generate_order(job, d_style, d_type, doors=[], drawers=[]):
         )
         c.setFillColorRGB(1, 1, 1)
         c.setFont("Helvetica-Bold", 16)
-        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - 34, Title)
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - 34, "DOOR ORDER FORM")
         c.setFont("Helvetica", 12)
         c.setFillColorRGB(0, 0, 0)
         c.drawString(LEFT_MARGIN, cursor, f"Customer : JS Designs Shop, LLC")
@@ -178,7 +171,23 @@ def generate_order(job, d_style, d_type, doors=[], drawers=[]):
         c.setFillColorRGB(BACKGROUND_COLOR[0], BACKGROUND_COLOR[1], BACKGROUND_COLOR[2])
         c.drawCentredString(PAGE_WIDTH / 4, cursor, "Doors")
         c.drawCentredString((PAGE_WIDTH / 4) * 3, cursor, "Drawer Fronts")
-        cursor -= 20
+        cursor -= 24
+        c.setStrokeColorRGB(0, 0, 0)
+        c.setFillColorRGB(BACKGROUND_COLOR[0], BACKGROUND_COLOR[1], BACKGROUND_COLOR[2])
+        c.rect(LEFT_MARGIN + 38, cursor, 60, 20, fill=1)
+        c.rect(LEFT_MARGIN + 98, cursor, 170, 20, fill=1)
+        c.rect(LEFT_MARGIN + 308, cursor, 60, 20, fill=1)
+        c.rect(LEFT_MARGIN + 368, cursor, 170, 20, fill=1)
+        c.setFont("Helvetica-Bold", 12)
+        c.setFillColorRGB(1, 1, 1)
+        string_center = LEFT_MARGIN + 68
+        c.drawCentredString(string_center, cursor + 5, "Qty")
+        string_center += 115
+        c.drawCentredString(string_center, cursor + 5, "Width X Height")
+        string_center += 155
+        c.drawCentredString(string_center, cursor + 5, "Qty")
+        string_center += 115
+        c.drawCentredString(string_center, cursor + 5, "Width X Height")
         c.setFont("Helvetica", 9)
         c.setFillColorRGB(0, 0, 0)
         c.drawCentredString(
@@ -195,6 +204,8 @@ def generate_order(job, d_style, d_type, doors=[], drawers=[]):
         c.setFillColorRGB(BACKGROUND_COLOR[0], BACKGROUND_COLOR[1], BACKGROUND_COLOR[2])
         c.drawCentredString(PAGE_WIDTH / 4, cursor, "Doors")
         c.drawCentredString((PAGE_WIDTH / 4) * 3, cursor, "Drawer Fronts")
+        c.setFont("Helvetica", 9)
+        c.setFillColorRGB(0, 0, 0)
         c.drawCentredString(
             PAGE_WIDTH / 2,
             20,
@@ -205,7 +216,7 @@ def generate_order(job, d_style, d_type, doors=[], drawers=[]):
     class OrderEntry(Flowable):
         """Draws table entry for each item in list of door sizes."""
 
-        def __init__(self, xoffset=0, height=20, qty="", size="", index="1"):
+        def __init__(self, xoffset=0, height=20, qty="", size="", index=1):
             Flowable.__init__(self)
             self.qty = qty
             self.size = size
@@ -230,7 +241,7 @@ def generate_order(job, d_style, d_type, doors=[], drawers=[]):
             self.canv.setFillColorRGB(1, 1, 1)
             self.canv.setFont("Helvetica", 12)
             self.canv.drawCentredString(
-                self.string_center, 0.25 * self.height, self.index
+                self.string_center, 0.25 * self.height, str(self.index)
             )
             self.canv.setFillColorRGB(0, 0, 0)
             self.canv.rect(self.qty_box_x, 0, self.qty_box_width, self.height)
@@ -250,7 +261,6 @@ def generate_order(job, d_style, d_type, doors=[], drawers=[]):
                 self.height,
             )
             self.string_center += 155
-            print(dir(Paragraph))
             self.canv.drawCentredString(
                 self.string_center,
                 0.25 * self.height,
@@ -266,9 +276,14 @@ def generate_order(job, d_style, d_type, doors=[], drawers=[]):
 
     def go(name, size_list):
         doc = SimpleDocTemplate(f"./reports/{name}-{d_style}.pdf")
-        Story = [Spacer(1, 3 * inch)]
-        for size in size_list:
-            p = OrderEntry(xoffset=-50, qty=size["qty"], size=size["size"])
+        Story = [Spacer(1, 3.11 * inch)]
+        for i in range(1, len(size_list)):
+            p = OrderEntry(
+                xoffset=-50,
+                qty=size_list[i - 1]["qty"],
+                size=size_list[i - 1]["size"],
+                index=i,
+            )
             Story.append(p)
         for size in size_list:
             p = OrderEntry(xoffset=-50, qty="2", size="23 x 24 7/8")
@@ -279,4 +294,4 @@ def generate_order(job, d_style, d_type, doors=[], drawers=[]):
     go(job.name, sizes)
 
 
-generate_order(job, "Slab-Birch", "Panelized Ends")
+# generate_order(job, "Slab-Birch", "Drawer Fronts")

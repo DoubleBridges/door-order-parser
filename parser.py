@@ -1,113 +1,192 @@
 from pdfminer.high_level import extract_pages
-from pdfminer.layout import LTTextContainer, LTChar
-import pprint
+from pdfminer.layout import LTTextContainer
 
 
-def parse_door_report(pdf):
-    def get_text_lines(pdf) -> list:
-        """
-        Extract lines of text from generated door report
-        """
-        lines = []
+class JobDetails:
+    def __init__(self, pdf) -> None:
+        self.pages = 0
+        self.name = ""
+        self.order_date = ""
+        self.door_styles = {}
+        self.doors = []
+        self.drawers = []
+        self._text_lines = []
+        self._ys = []
+        self._sizes = {}
+        self._qtys = {}
+        self._types = {}
+        self._doors = []
+        self._drawers = []
+        self._get_text_lines(pdf)
+        self._reformat_ypos()
+        self._split_lines_into_sections()
+        # self._load_job_object(self._text_lines)
+        # self._get_door_sizes_from_line_objs()
 
-        for page_layout in extract_pages(pdf):
-            for element in page_layout:
-                if isinstance(element, LTTextContainer):
-                    for text_line in element:
-                        lines.append(text_line)
+    def __repr__(self) -> str:
+        return f"Job name: {self.name} Order date: {self.order_date}"
 
-        return lines
-
-    def get_name_in_brackets(base_str: str) -> str:
+    def _get_name_in_brackets(self, base_str: str) -> str:
         opening = base_str.index("(")
         closing = base_str.index(")")
         return base_str[opening + 1 : closing]
 
-    title_section_height = 24.0
-    door_style_height = 18.0
-    door_type_height = 14.0
-    base_height = 10
+    def _get_text_lines(self, pdf) -> None:
+        """
+        Extract lines of text from generated door report.
+        Store the text objs in a list of tuples with tup[0] being the page number
+        and tup[1] being the object
+        """
+        for page_layout in extract_pages(pdf):
+            self.pages += 1
+            for element in page_layout:
+                if isinstance(element, LTTextContainer):
+                    for text_line in element:
+                        self._text_lines.append((self.pages, text_line))
 
-    class JobDetails:
-        def __init__(self, name="", date="", styles={}) -> None:
-            self.name = name
-            self.order_date = date
-            self.door_styles = styles
+    def _reformat_ypos(self) -> None:
+        """
+        Add an offset to y cooridinate to account for multiple pages
+        using the page numbers. just the object to the list
+        """
+        for i in range(len(self._text_lines)):
+            tup = self._text_lines[i]
+            offset = self.pages - tup[0] + 1
+            obj = tup[1]
+            ypos = list(str(int(round(obj.y0, 0))))
+            ypos.insert(0, str(offset))
+            new_ypos = int("".join(ypos))
+            setattr(obj, "y0", new_ypos)
+            self._text_lines[i] = obj
 
-    def load_job_object(text_line_objs: list) -> JobDetails:
-        job = JobDetails()
+    def _split_lines_into_sections(self) -> None:
+        """
+        Seperate lines into their appropriate sections accroding to their
+        y cooridnates
+        """
+        title_section_height = 24.0
+        door_style_height = 18.0
+        door_type_height = 14.0
         curr_style = ""
         curr_type = ""
+        prev_type = ""
 
-        for line in text_line_objs:
+        for line in self._text_lines:
             height = round(line.height, 0)
             text = line.get_text().replace("\n", "")
+            ypos = int(line.y0)
+
             if height == title_section_height or "Created" in text:
-                continue
+                self._text_lines.remove(line)
+
             elif "Job" in text:
-                job.name = get_name_in_brackets(text)
+                self.name = self._get_name_in_brackets(text)
+
             elif "Date" in text:
-                job.order_date = text.split(":")[-1].strip()
+                self.order_date = text.split(":")[-1].strip()
+
             elif height == door_style_height:
                 name = text.split("(")[0].strip()
                 species = text.split("(")[1].strip().replace(")", "")
+                prev_style = curr_style
                 curr_style = f"{name}-{species}"
-                job.door_styles[curr_style] = {"profiles": [], "types": {}}
-            elif "Profile" in text or "Detail" in text or "Pattern" in text:
-                job.door_styles[curr_style]["profiles"].append(text)
-            elif height == door_type_height:
-                curr_type = text
-                job.door_styles[curr_style]["types"][text] = {
+
+                self.door_styles[curr_style] = {
+                    "species": species,
+                    "section_start": ypos,
+                    "section_end": 0,
+                    "profiles": [],
+                    "types": {},
+                    "doors": [],
+                    "drawers": [],
                     "lines": [],
-                    "total": 0,
-                    "sizes": [],
                 }
-            else:
-                if curr_type != "" and curr_style != "":
-                    job.door_styles[curr_style]["types"][curr_type]["lines"].append(
-                        line
+
+                if prev_style in self.door_styles:
+                    self.door_styles[prev_style]["section_end"] = ypos + 25
+
+            elif height == door_type_height:
+                prev_type = curr_type
+                curr_type = text
+                print(curr_style)
+                print(prev_type)
+                print(curr_type)
+                print("----------")
+
+                self.door_styles[curr_style]["types"][curr_type] = {
+                    "lines": [],
+                    "section_start": int(ypos),
+                    "section_end": 0,
+                }
+
+                if prev_type in self.door_styles[curr_style]["types"]:
+                    self.door_styles[curr_style]["types"][prev_type]["section_end"] = (
+                        ypos + 15
                     )
 
-        return job
+        for d_style in self.door_styles:
+            start = self.door_styles[d_style]["section_start"]
+            end = self.door_styles[d_style]["section_end"]
+            self.door_styles[d_style]["lines"] = [
+                line for line in self._text_lines if line.y0 in range(end, start)
+            ]
 
-    def get_door_sizes_from_line_objs(job_obj: JobDetails) -> None:
-        qty_xpos_range = range(73, 93)
+    # def _get_sizes_
+    # def _get_door_sizes_from_line_objs(self) -> None:
+    #     qty_xpos_range = range(70, 90)
+    #     type_xpos_range = range(280, 310)
 
-        for style in job_obj.door_styles:
-            for door_type in job_obj.door_styles[style]["types"]:
-                qty_ypos = {}
-                size_and_ypos = []
+    #     for style in self.door_styles:
+    #         for door_type in self.door_styles[style]["types"]:
+    #             print(style, door_type)
+    #             ys = []
+    #             sizes = {}
+    #             qtys = {}
+    #             # types = {}
+    #             doors = []
+    #             drawers = []
 
-                for line in job_obj.door_styles[style]["types"][door_type]["lines"]:
-                    text = line.get_text().replace("\n", "").strip()
-                    ypos = round(line.y0, 2)
+    #             if door_type == "Drawer Fronts":
+    #                 print("drawer")
 
-                    if text.isdigit() and int(line.x0) in qty_xpos_range:
-                        qty_ypos[ypos] = text
-                    if "x" in text and text[0].isdigit():
-                        size_and_ypos.append((ypos, text))
+    #             for line in self.door_styles[style]["types"][door_type]["lines"]:
+    #                 text = line.get_text().replace("\n", "").strip()
+    #                 # print(text)
+    #                 ypos = round(line.y0, 2)
+    #                 ys.append(ypos)
 
-                sizes = job_obj.door_styles[style]["types"][door_type]["sizes"]
+    #                 if text.isdigit() and int(line.x0) in qty_xpos_range:
+    #                     qtys[ypos] = text
+    #                 if "x" in text and text[0].isdigit():
+    #                     sizes[ypos] = text
+    #                 # if text.isalpha() and int(line.x0) in type_xpos_range:
+    #                 #     types[ypos] = text
 
-                for (pos, size) in size_and_ypos:
-                    sizes.append({"qty": qty_ypos[pos], "size": size, "pos": pos})
+    #             ys.sort()
+    #             ys.reverse()
+    #             print(style)
+    #             # print(types)
+    #             print(qtys)
+    #             print(sizes)
 
-                sizes = sorted(sizes, key=lambda item: item["pos"])
-                sizes.reverse()
+    #             # for pos in ys:
+    #             #     print(pos)
+    #             #     doors.append(
+    #             #         {"qty": qtys[pos], "size": sizes[pos], "d_type": types[pos]}
+    #             #     ) if types[pos] != "DF" else drawers.append(
+    #             #         {"qty": qtys[pos], "size": sizes[pos], "d_type": types[pos]}
+    #             #     )
 
-                job_obj.door_styles[style]["types"][door_type]["sizes"] = sizes
+    #             # print(doors, drawers)
 
-                del job_obj.door_styles[style]["types"][door_type]["lines"]
+    #             # sizes = self.door_styles[style]["types"][door_type]["sizes"]
 
-    lines: list = get_text_lines(pdf)
-    job: JobDetails = load_job_object(lines)
-    get_door_sizes_from_line_objs(job)
+    #             # for (pos, size) in size_and_ypos:
+    #             #     sizes.append({"qty": qty_ypos[pos], "size": size, "pos": pos})
 
-    return job
+    #             # sizes = sorted(sizes, key=lambda item: item["pos"])
+    #             # sizes.reverse()
 
+    #             # self.door_styles[style]["types"][door_type]["sizes"] = sizes
 
-pp = pprint.PrettyPrinter(indent=2)
-
-# pp.pprint(job.name)
-# pp.pprint(job.order_date)
-# pp.pprint(job.door_styles)
+    #             del self.door_styles[style]["types"][door_type]["lines"]
