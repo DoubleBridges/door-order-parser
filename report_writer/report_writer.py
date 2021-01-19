@@ -1,20 +1,17 @@
-from reportlab.lib.pagesizes import LETTER
+# from reportlab.lib.pagesizes import LETTER
 from reportlab.lib.units import inch
-from reportlab.pdfgen import canvas
+
+# from reportlab.pdfgen import canvas
 from reportlab.platypus import SimpleDocTemplate, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.rl_config import defaultPageSize
 from reportlab.lib.units import inch
 from reportlab.platypus.flowables import Flowable
-from reportlab.lib.colors import tan, green
-
-# from parser import parse_door_report
 
 
-# job = parse_door_report("sample.pdf")
+# job = JobDetails("sample.pdf")
 
 
-def generate_order(job, d_style, d_type, doors=[], drawers=[]):
+def generate_order(job, d_style, doors=[]):
     PAGE_HEIGHT = defaultPageSize[1]
     PAGE_WIDTH = defaultPageSize[0]
     LEFT_MARGIN = 30
@@ -25,7 +22,7 @@ def generate_order(job, d_style, d_type, doors=[], drawers=[]):
     SPECIES = d_style.split("-")[-1]
     STYLE = d_style.split("-")[0]
 
-    c = canvas.Canvas("font-colors.pdf", pagesize=LETTER)
+    # c = canvas.Canvas("font-colors.pdf", pagesize=LETTER)
 
     def myFirstPage(c, doc):
         cursor = CURSOR_HEIGHT
@@ -277,21 +274,22 @@ def generate_order(job, d_style, d_type, doors=[], drawers=[]):
     def go(name, size_list):
         doc = SimpleDocTemplate(f"./reports/{name}-{d_style}.pdf")
         Story = [Spacer(1, 3.11 * inch)]
-        for i in range(1, len(size_list)):
-            p = OrderEntry(
-                xoffset=-50,
-                qty=size_list[i - 1]["qty"],
-                size=size_list[i - 1]["size"],
-                index=i,
-            )
-            Story.append(p)
+        # for i in range(1, len(size_list)):
+        #     p = OrderEntry(
+        #         xoffset=-50,
+        #         qty=size_list[i - 1]["qty"],
+        #         size=size_list[i - 1]["size"],
+        #         index=i,
+        #     )
+        #     Story.append(p)
         for size in size_list:
             p = OrderEntry(xoffset=-50, qty="2", size="23 x 24 7/8")
             Story.append(p)
         doc.build(Story, onFirstPage=myFirstPage, onLaterPages=myLaterPages)
 
-    sizes = job.door_styles[d_style]["types"][d_type]["sizes"]
-    go(job.name, sizes)
+    # sizes = job.door_styles[d_style]["types"][d_type]["sizes"]
+    print(doors)
+    go(job.name, doors)
 
 
 # generate_order(job, "Slab-Birch", "Drawer Fronts")
