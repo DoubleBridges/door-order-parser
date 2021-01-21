@@ -228,6 +228,9 @@ def generate_order(job, path, d_style, doors=[], drawers=[]):
         c.setFont("Helvetica", 9)
         c.setFillColorRGB(0, 0, 0)
         c.drawCentredString(
+            PAGE_WIDTH / 2, 40, f"Page 1 of {job.name}-{STYLE}-{SPECIES}"
+        )
+        c.drawCentredString(
             PAGE_WIDTH / 2,
             20,
             'Reminder : Any doors 46" and over in height will automatically receive a horizontal center rail unless otherwise noted.',
@@ -260,6 +263,9 @@ def generate_order(job, path, d_style, doors=[], drawers=[]):
         c.drawCentredString(string_center, cursor + 5, "Width X Height")
         c.setFont("Helvetica", 9)
         c.setFillColorRGB(0, 0, 0)
+        c.drawCentredString(
+            PAGE_WIDTH / 2, 40, f"Page {doc.page} of {job.name}-{STYLE}-{SPECIES}"
+        )
         c.drawCentredString(
             PAGE_WIDTH / 2,
             20,
