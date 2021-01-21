@@ -52,7 +52,7 @@ class JobDetails:
             tup = self._text_lines[i]
             obj = tup[1]
             page_no = tup[0]
-            y = int(obj.y0)
+            y = obj.y0
             ypos = list(str(y))
             offset = (
                 self.pages - page_no + 1
