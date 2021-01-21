@@ -52,8 +52,8 @@ class JobDetails:
             tup = self._text_lines[i]
             obj = tup[1]
             page_no = tup[0]
-            y = obj.y0
-            ypos = list(str(y))
+            y = round(obj.y0, 0)
+            ypos = list(str(y))[:-2]
             offset = (
                 self.pages - page_no + 1
                 if len(ypos) > 2

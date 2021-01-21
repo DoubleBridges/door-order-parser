@@ -7,5 +7,7 @@ Items marked 'N/A' are text fields to completed in the PDF before order is place
 
 
 ## Sample Input
-![Sample Input](/sample_input/sample-1.png)
-![Sample Input](/sample_input/sample-2.png)
+![Sample Input](/sample-1.png)
+![Sample Input](/sample-2.png)
+
+## Sample Output
