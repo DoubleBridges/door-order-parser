@@ -5,7 +5,7 @@ from reportlab.lib.units import inch
 from reportlab.platypus.flowables import Flowable
 
 
-def generate_order(job, d_style, doors=[], drawers=[]):
+def generate_order(job, path, d_style, doors=[], drawers=[]):
     PAGE_HEIGHT = defaultPageSize[1]
     PAGE_WIDTH = defaultPageSize[0]
     LEFT_MARGIN = 30
@@ -49,7 +49,7 @@ def generate_order(job, d_style, doors=[], drawers=[]):
         c.drawString(LEFT_MARGIN, cursor, f"Door Style : {STYLE}")
         c.setFont("Helvetica", 12)
         c.drawString(
-            (PAGE_WIDTH / 2) + (LEFT_MARGIN / 2), cursor, "Phone : 901-835-7648"
+            (PAGE_WIDTH / 2) + (LEFT_MARGIN / 2), cursor, "Phone : 901-853-7568"
         )
         cursor -= LINE_HEIGHT
         c.drawString(LEFT_MARGIN, cursor, f"Panel : ")
@@ -346,8 +346,8 @@ def generate_order(job, d_style, doors=[], drawers=[]):
                     self.string_center, 0.25 * self.height, self.dr_size
                 )
 
-    def build_pdf(name, door_list, drawer_list):
-        doc = SimpleDocTemplate(f"./reports/{name}-{d_style}.pdf")
+    def build_pdf(path, name, door_list, drawer_list):
+        doc = SimpleDocTemplate(f"{path}/{name}-{d_style}.pdf")
         Story = [Spacer(1, 3.11 * inch)]
         num_of_doors = len(door_list)
         num_of_drawers = len(drawer_list)
@@ -376,4 +376,4 @@ def generate_order(job, d_style, doors=[], drawers=[]):
 
         doc.build(Story, onFirstPage=myFirstPage, onLaterPages=myLaterPages)
 
-    build_pdf(job.name, doors, drawers)
+    build_pdf(path, job.name, doors, drawers)
