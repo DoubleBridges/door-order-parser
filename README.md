@@ -1,5 +1,5 @@
-# door-order-parser
-Reads a door list from the jobs folder and generates a door order for each door style and wood type.
+# Door Order Parser
+CLI tool that reads a door list from the jobs folder and generates a door order for each door style and wood type.
 
 You must pass an argument that is a job name as a string.
 
