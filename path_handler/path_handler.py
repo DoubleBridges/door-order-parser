@@ -2,11 +2,13 @@ import os
 
 
 def get_dest_path(name: str) -> str:
-
-    os.chdir("/mnt/j")
+    print(os.getcwd())
+    os.chdir("/mnt/k")
+    print(os.getcwd())
     path = os.getcwd()
+    print(path)
 
-    def get_subfolders(path):
+    def get_subfolders(path: str) -> list:
         return [f.name for f in os.scandir(path) if f.is_dir()]
 
     subfolders = get_subfolders(path)

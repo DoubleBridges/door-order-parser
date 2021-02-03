@@ -1,3 +1,7 @@
 {
-  "python.pythonPath": "/home/doublebridges/.local/share/virtualenvs/door-order-parser-d-jnxZ9N/bin/python"
+  "python.pythonPath": "/home/doublebridges/.local/share/virtualenvs/door-order-parser-y-SeHPNq/bin/python",
+  "python.linting.pylintEnabled": false,
+  "python.linting.pycodestyleEnabled": true,
+  "python.linting.enabled": true,
+  "python.formatting.provider": "black"
 }
