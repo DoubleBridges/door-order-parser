@@ -1,5 +1,6 @@
 from pdfminer.high_level import extract_pages
 from pdfminer.layout import LTTextContainer
+import csv
 from icecream import ic
 
 
@@ -12,6 +13,8 @@ class QuoteDetails:
         self.desc_range = None
         self.note_range = None
         self.table_range = None
+        self.mat_range = None
+        self.install_range = None
         self.table_data_ypos = []
         self.table_data = {}
         self._get_text_lines(pdf)
@@ -19,6 +22,8 @@ class QuoteDetails:
         self._get_room_range()
         self._get_note_range()
         self._get_desc_range()
+        self._get_mat_range()
+        self._get_install_range()
         self._get_table_range()
         self._get_data_ypos()
         self._load_data_map()
@@ -76,6 +81,15 @@ class QuoteDetails:
     def _get_desc_range(self) -> None:
         self.desc_range = self._get_x_range_between_text("Note", 1, "Materials", 0)
 
+    def _get_mat_range(self) -> None:
+        self.mat_range = self._get_x_range_between_text(
+            "Materials", 0, "Installation", 0
+        )
+
+    def _get_install_range(self) -> None:
+        x_pos = int(round(self._get_text_xpos("Installation")[0], 0))
+        self.install_range = range(x_pos, x_pos + 100)
+
     def _get_table_range(self) -> None:
         self.table_range = self._get_y_range_between_text(
             "Room", 0, "Upholstered seating", 1
@@ -107,6 +121,8 @@ class QuoteDetails:
                 "room": None,
                 "note": None,
                 "description": None,
+                "materials": None,
+                "installation": None,
             }
             data_list = self.table_data[ypos]
             elevation = [text for (xpos, text) in data_list if xpos in self.elev_range]
@@ -115,14 +131,39 @@ class QuoteDetails:
             description = [
                 text for (xpos, text) in data_list if xpos in self.desc_range
             ]
+            materials = [text for (xpos, text) in data_list if xpos in self.mat_range]
+            installation = [
+                text for (xpos, text) in data_list if xpos in self.install_range
+            ]
 
             line_item["elevation"] = None if len(elevation) == 0 else elevation[0]
             line_item["room"] = None if len(room) == 0 else room[0]
             line_item["note"] = None if len(note) == 0 else note[0]
             line_item["description"] = None if len(description) == 0 else description[0]
+            line_item["materials"] = None if len(materials) == 0 else materials[0]
+            line_item["installation"] = (
+                None if len(installation) == 0 else installation[0]
+            )
 
             self.table_data[ypos] = line_item
 
+        self.table_data = [self.table_data[ypos] for ypos in self.table_data.keys()]
 
-quote = QuoteDetails("../sample_input.pdf")
-ic(quote.table_data)
+
+quote_list = QuoteDetails("../sample_input.pdf").table_data
+
+with open("/mnt/c/Users/Davel/Documents/sample_quote.csv", mode="w") as csv_file:
+    fieldnames = [
+        "elevation",
+        "room",
+        "note",
+        "description",
+        "materials",
+        "installation",
+    ]
+    writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+
+    writer.writeheader()
+
+    for line in quote_list:
+        writer.writerow(line)
