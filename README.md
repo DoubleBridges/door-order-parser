@@ -3,7 +3,7 @@ CLI tool that reads a door list from the jobs folder and generates a door order 
 
 You must pass an argument that is a job name as a string.
 
-Items marked 'N/A' are text fields to completed in the PDF before order is placed.
+Items marked 'N/A' are text fields to be completed in the PDF text fields before order is placed.
 
 
 ## Sample Input
