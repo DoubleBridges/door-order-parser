@@ -2,20 +2,31 @@ from pdfminer.high_level import extract_pages
 from pdfminer.layout import LTTextContainer
 from icecream import ic
 
+from .utils.parsing_utils import (
+    get_formatted_text_from_line_obj,
+    get_start_and_end_ypos,
+)
+from .door_style.door_style import DoorStyle
 
-class JobDetails:
-    def __init__(self, pdf) -> None:
+
+class JobSummary:
+    def __init__(self, pdf, name) -> None:
         self.pages = 0
-        self.name = ""
+        self.name = name
         self.order_date = ""
-        self.door_styles = {}
+        self.door_styles = []
         self.doors = []
         self.drawers = []
+        self._door_ypos = []
+        self._drawer_ypos = []
         self._text_lines = []
         self._get_text_lines(pdf)
         self._reformat_ypos()
-        self._split_lines_into_sections(self._text_lines)
-        self._get_style_sizes_and_totals()
+        self._get_job_date()
+        self._get_doorstyle_ypos()
+        self.get_doorstyle_objs_from_tuples()
+        # self._split_lines_into_sections(self._text_lines)
+        # self._get_style_sizes_and_totals()
 
     # def __repr__(self) -> str:
     #     return f"Job name: {self.name} Order date: {self.order_date}\n"
@@ -66,7 +77,15 @@ class JobDetails:
 
         self._text_lines.sort(key=lambda line: line.y0, reverse=True)
 
-    def _split_lines_into_sections(self, lines: list) -> None:
+    def _get_job_date(self) -> None:
+        date = [
+            get_formatted_text_from_line_obj(line)
+            for line in self._text_lines
+            if "Date" in line.get_text()
+        ][0]
+        self.date = date
+
+    def _split_lines_into_doorstyles(self, lines: list) -> None:
         """
         Seperate lines into their appropriate sections accroding to their
         y cooridnates
@@ -83,13 +102,7 @@ class JobDetails:
             ypos = int(line.y0)
             text = line.get_text().replace("\n", "")
 
-            if "Job" in text:
-                self.name = self._get_name_in_brackets(text)
-
-            elif "Date" in text:
-                self.order_date = text.split(":")[-1].strip()
-
-            elif height == title_section_height or "Created" in text:
+            if height == title_section_height or "Created" in text:
                 continue
 
             elif height == door_style_height:
@@ -125,106 +138,18 @@ class JobDetails:
                         "section_end"
                     ] = ypos
 
-    def _get_door_details(self, style: str) -> None:
-        """
-        Take the list of lines in each door style object and extract the qtys and sizes by correlated y position.
-        Store them in a list of tuples on the door type.
-        """
-        for d_type in self.door_styles[style]["types"]:
-            ys = []
-            qtys = {}
-            sizes = {}
-            start = self.door_styles[style]["types"][d_type]["section_start"]
-            end = self.door_styles[style]["types"][d_type]["section_end"]
-            lines = [
-                line
-                for line in self.door_styles[style]["lines"]
-                if line.y0 in range(end, start)
-            ]
+    def _get_doorstyle_ypos(self) -> None:
 
-            for line in lines:
-                qty_xpos_range = range(70, 90)
-                text = line.get_text().replace("\n", "")
-                ypos = line.y0
-                xpos = int(line.x0)
+        doorstyles = [
+            (get_formatted_text_from_line_obj(line), line.y0)
+            for line in self._text_lines
+            if round(line.height, 0) == 18
+        ]
 
-                if "x" in text and "Width" not in text:
-                    if ypos not in ys:
-                        ys.append(ypos)
-                    sizes[ypos] = text
-                if text.isdigit() and xpos in qty_xpos_range:
-                    if ypos not in ys:
-                        ys.append(ypos)
-                    qtys[ypos] = text
+        self.door_styles = get_start_and_end_ypos(doorstyles)
 
-            self.door_styles[style]["types"][d_type]["sizes"] = [
-                (qtys[ypos], sizes[ypos]) for ypos in ys
-            ]
-
-    def _get_size_and_quantity(self, style: str) -> None:
-        """
-        Take the list of size tuples and seperate them into lists of
-        doors and drawers by their listed type
-        """
-        doors = []
-        drawers = []
-
-        for d_type in self.door_styles[style]["types"]:
-            size_list = self.door_styles[style]["types"][d_type]["sizes"]
-
-            doors += [
-                item
-                for item in size_list
-                if d_type != "Drawer Fronts" and d_type != "False Fronts"
-            ]
-
-            drawers += [
-                item
-                for item in size_list
-                if d_type == "Drawer Fronts" or d_type == "False Fronts"
-            ]
-
-        self.door_styles[style]["doors"], self.door_styles[style]["drawers"] = (
-            doors,
-            drawers,
-        )
-
-    def _get_style_sizes_and_totals(self) -> None:
-        total_doors = 0
-        total_drawers = 0
-
-        # Find the ypos range for each section
-        for style in self.door_styles:
-            start = self.door_styles[style]["section_start"]
-            end = self.door_styles[style]["section_end"]
-            self.door_styles[style]["lines"] = [
-                line for line in self._text_lines if line.y0 in range(end, start)
-            ]
-
-            self._get_door_details(style)  # Get the sizes from the text lines
-            self._get_size_and_quantity(style)  # Seperate them into doors and drawers
-            del self.door_styles[style]["lines"]  # Get rid of the list of lines objects
-
-            # Calculate the toal doors and drawers fronts for both the door styles
-            # and the job.
-
-            style_total_doors = sum(
-                [int(qty) for (qty, _) in self.door_styles[style]["doors"]]
-            )
-
-            style_total_drawers = sum(
-                [int(qty) for (qty, _) in self.door_styles[style]["drawers"]]
-            )
-
-            (
-                self.door_styles[style]["door_count"],
-                self.door_styles[style]["drawer_count"],
-            ) = (
-                style_total_doors,
-                style_total_drawers,
-            )
-
-            total_doors += style_total_doors
-            total_drawers += style_total_drawers
-
-        self.doors, self.drawers = total_doors, total_drawers
+    def get_doorstyle_objs_from_tuples(self) -> None:
+        self.door_styles = [
+            DoorStyle(item["name"], item[1][0], item[1][1]) for item in self.door_styles
+        ]
+        ic(self.door_styles)
