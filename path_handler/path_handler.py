@@ -2,11 +2,8 @@ import os
 
 
 def get_dest_path(name: str) -> str:
-    print(os.getcwd())
     os.chdir("/mnt/k")
-    print(os.getcwd())
     path = os.getcwd()
-    print(path)
 
     def get_subfolders(path: str) -> list:
         return [f.name for f in os.scandir(path) if f.is_dir()]
@@ -14,11 +11,25 @@ def get_dest_path(name: str) -> str:
     subfolders = get_subfolders(path)
 
     if name not in subfolders:
-        order_path = f"{name}/Door Orders"
-        os.mkdir(name)
-        os.mkdir(order_path)
-        os.chdir(order_path)
-        path = os.getcwd()
+
+        print(
+            """
+        Job folder does not exist.
+        Would you like to create one and add a Door Orders directory?
+        """
+        )
+
+        response = input("Y/N\n")
+
+        if response.lower() == "y":
+            order_path = f"{name}/Door Orders"
+            os.mkdir(name)
+            os.mkdir(order_path)
+            os.chdir(order_path)
+            path = os.getcwd()
+        else:
+            return FileNotFoundError
+
     else:
         os.chdir(f"{name}/Door Orders")
         path = os.getcwd()

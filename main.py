@@ -1,4 +1,5 @@
 import sys
+from icecream import ic
 
 from parser.parser import JobDetails
 from report_writer.report_writer import generate_order
@@ -10,17 +11,18 @@ except IndexError:
     print("Must enter a job name in the form of 'Job Name'")
 
 try:
-    path = get_dest_path(sys.argv[1])
+    path = get_dest_path(job_name)
     job = JobDetails(f"{path}/PSReport.pdf")
 except FileNotFoundError:
-    print("No door report in job folder")
+    print("Please add a door report in the Door Orders folder")
 
 else:
+    ic(job)
     for style in job.door_styles:
         door_list = job.door_styles[style]["doors"]
         drawer_list = job.door_styles[style]["drawers"]
 
         generate_order(job, path, style, door_list, drawer_list)
-        print(f"Generated {job.name}-{style}.pdf in Job Files/{job.name}/Door Orders")
+        print(f"Generated {job.name}-{style}.pdf in Job Files/{job_name}/Door Orders")
 
 sys.exit()

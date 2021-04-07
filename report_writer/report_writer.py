@@ -61,7 +61,7 @@ def generate_order(job, path, d_style, doors=[], drawers=[]):
             height=INPUT_HEIGHT,
             width=(PAGE_WIDTH / 2) - LEFT_MARGIN - (LEFT_MARGIN / 2) - 60,
             borderWidth=0,
-            fillColor=([1, 1, 1]),
+            # fillColor=([1, 1, 1]),
             relative=True,
         )
         c.drawString((PAGE_WIDTH / 2) + (LEFT_MARGIN / 2), cursor, "Comments : ")
@@ -83,7 +83,7 @@ def generate_order(job, path, d_style, doors=[], drawers=[]):
             height=INPUT_HEIGHT,
             width=(PAGE_WIDTH / 2) - LEFT_MARGIN - (LEFT_MARGIN / 2) - 98,
             borderWidth=0,
-            fillColor=([1, 1, 1]),
+            # fillColor=([1, 1, 1]),
             relative=True,
         )
         c.line(
@@ -102,7 +102,7 @@ def generate_order(job, path, d_style, doors=[], drawers=[]):
             height=INPUT_HEIGHT,
             width=(PAGE_WIDTH / 2) - LEFT_MARGIN - (LEFT_MARGIN / 2) - 108,
             borderWidth=0,
-            fillColor=([1, 1, 1]),
+            # fillColor=([1, 1, 1]),
             relative=True,
         )
         c.line(
@@ -121,7 +121,7 @@ def generate_order(job, path, d_style, doors=[], drawers=[]):
             height=INPUT_HEIGHT,
             width=(PAGE_WIDTH / 2) - LEFT_MARGIN - (LEFT_MARGIN / 2) - 82,
             borderWidth=0,
-            fillColor=([1, 1, 1]),
+            # fillColor=([1, 1, 1]),
             relative=True,
         )
         c.setFont("Helvetica-Bold", 12)
@@ -134,7 +134,7 @@ def generate_order(job, path, d_style, doors=[], drawers=[]):
             height=INPUT_HEIGHT,
             width=(PAGE_WIDTH / 2) - LEFT_MARGIN - (LEFT_MARGIN / 2) - 92,
             borderWidth=0,
-            fillColor=([1, 1, 1]),
+            # fillColor=([1, 1, 1]),
             relative=True,
         )
         c.setFont("Helvetica", 12)
@@ -151,7 +151,7 @@ def generate_order(job, path, d_style, doors=[], drawers=[]):
             height=INPUT_HEIGHT,
             width=(PAGE_WIDTH / 2) - LEFT_MARGIN - (LEFT_MARGIN / 2) - 87,
             borderWidth=0,
-            fillColor=([1, 1, 1]),
+            # fillColor=([1, 1, 1]),
             relative=True,
         )
         cursor -= LINE_HEIGHT
@@ -169,7 +169,7 @@ def generate_order(job, path, d_style, doors=[], drawers=[]):
             height=INPUT_HEIGHT,
             width=30,
             borderWidth=0,
-            fillColor=([1, 1, 1]),
+            # fillColor=([1, 1, 1]),
             relative=True,
         )
         c.acroForm.textfield(
@@ -180,7 +180,7 @@ def generate_order(job, path, d_style, doors=[], drawers=[]):
             height=INPUT_HEIGHT,
             width=30,
             borderWidth=0,
-            fillColor=([1, 1, 1]),
+            # fillColor=([1, 1, 1]),
             relative=True,
         )
         cursor -= 12

@@ -17,8 +17,8 @@ class JobDetails:
         self._split_lines_into_sections(self._text_lines)
         self._get_style_sizes_and_totals()
 
-    def __repr__(self) -> str:
-        return f"Job name: {self.name} Order date: {self.order_date}"
+    # def __repr__(self) -> str:
+    #     return f"Job name: {self.name} Order date: {self.order_date}\n"
 
     def _get_name_in_brackets(self, base_str: str) -> str:
         """
@@ -43,8 +43,8 @@ class JobDetails:
 
     def _reformat_ypos(self) -> None:
         """
-        Since the parser does not neccessarily read the text objects in the order
-        they're on the page, we need to sort the list.
+        Since the parser does not neccessarily read the text objects in the
+        order they're on the page, we need to sort the list.
         Add an offset to y cooridinate to account for multiple pages
         using the page numbers.
         """
@@ -203,7 +203,7 @@ class JobDetails:
 
             self._get_door_details(style)  # Get the sizes from the text lines
             self._get_size_and_quantity(style)  # Seperate them into doors and drawers
-            del self.door_styles[style]["lines"]  # Get rid of the list of objects
+            del self.door_styles[style]["lines"]  # Get rid of the list of lines objects
 
             # Calculate the toal doors and drawers fronts for both the door styles
             # and the job.
