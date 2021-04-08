@@ -16,13 +16,10 @@ try:
 except FileNotFoundError:
     print("Please add a door report in the Door Orders folder")
 
-# else:
-#     ic(job)
-#     for style in job.door_styles:
-#         door_list = job.door_styles[style]["doors"]
-#         drawer_list = job.door_styles[style]["drawers"]
-
-#         generate_order(job, path, style, door_list, drawer_list)
-#         print(f"Generated {job.name}-{style}.pdf in Job Files/{job_name}/Door Orders")
+else:
+    ic(job)
+    for style in job.door_styles:
+        generate_order(job, path, style.name, style.species, style.doors, style.drawers)
+        print(f"Generated {job.name}-{style}.pdf in Job Files/{job_name}/Door Orders")
 
 sys.exit()

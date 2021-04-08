@@ -1,6 +1,5 @@
 from pdfminer.high_level import extract_pages
 from pdfminer.layout import LTTextContainer
-from icecream import ic
 
 from .utils.parsing_utils import (
     get_formatted_text_from_line_obj,
@@ -15,21 +14,15 @@ class JobSummary:
         self.name = name
         self.order_date = ""
         self.door_styles = []
-        self.doors = []
-        self.drawers = []
-        self._door_ypos = []
-        self._drawer_ypos = []
         self._text_lines = []
         self._get_text_lines(pdf)
         self._reformat_ypos()
         self._get_job_date()
         self._get_doorstyle_ypos()
-        self.get_doorstyle_objs_from_tuples()
-        # self._split_lines_into_sections(self._text_lines)
-        # self._get_style_sizes_and_totals()
+        self._instantiate_doorstyle_objs()
 
-    # def __repr__(self) -> str:
-    #     return f"Job name: {self.name} Order date: {self.order_date}\n"
+    def __repr__(self) -> str:
+        return f"Job name: {self.name} Order date: {self.order_date}\n"
 
     def _get_name_in_brackets(self, base_str: str) -> str:
         """
@@ -85,59 +78,6 @@ class JobSummary:
         ][0]
         self.date = date
 
-    def _split_lines_into_doorstyles(self, lines: list) -> None:
-        """
-        Seperate lines into their appropriate sections accroding to their
-        y cooridnates
-        """
-        title_section_height = 24.0
-        door_style_height = 18.0
-        door_type_height = 14.0
-        curr_style = ""
-        curr_type = ""
-        prev_type = ""
-
-        for line in lines:
-            height = round(line.height, 0)
-            ypos = int(line.y0)
-            text = line.get_text().replace("\n", "")
-
-            if height == title_section_height or "Created" in text:
-                continue
-
-            elif height == door_style_height:
-                name = text.split("(")[0].strip()
-                species = text.split("(")[1].strip().replace(")", "")
-                prev_style = curr_style
-                curr_style = f"{name}-{species}"
-
-                self.door_styles[curr_style] = {
-                    "species": species,
-                    "section_start": ypos,
-                    "section_end": 0,
-                    "profiles": [],
-                    "types": {},
-                    "doors": [],
-                    "drawers": [],
-                }
-
-                if prev_style in self.door_styles:
-                    self.door_styles[prev_style]["section_end"] = ypos + 25
-
-            elif height == door_type_height:
-                prev_type = curr_type
-                curr_type = text
-
-                self.door_styles[curr_style]["types"][curr_type] = {
-                    "section_start": int(ypos),
-                    "section_end": 0,
-                }
-
-                if prev_type in self.door_styles[curr_style]["types"]:
-                    self.door_styles[curr_style]["types"][prev_type][
-                        "section_end"
-                    ] = ypos
-
     def _get_doorstyle_ypos(self) -> None:
 
         doorstyles = [
@@ -148,8 +88,16 @@ class JobSummary:
 
         self.door_styles = get_start_and_end_ypos(doorstyles)
 
-    def get_doorstyle_objs_from_tuples(self) -> None:
-        self.door_styles = [
-            DoorStyle(item["name"], item[1][0], item[1][1]) for item in self.door_styles
-        ]
-        ic(self.door_styles)
+    def _instantiate_doorstyle_objs(self) -> None:
+        doorstyle_list = []
+
+        for doorstyle in self.door_styles:
+            name = doorstyle["name"]
+            species = doorstyle["species"]
+            y_range = range(doorstyle["end_y"], doorstyle["start_y"])
+            lines = [
+                text_line for text_line in self._text_lines if text_line.y0 in y_range
+            ]
+            doorstyle_list.append(DoorStyle(name, species, y_range, lines))
+
+        self.door_styles = doorstyle_list
