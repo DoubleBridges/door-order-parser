@@ -1,14 +1,18 @@
 import os
 
 
-def get_dest_path(name: str) -> str:
+def get_dest_path(job_path: str) -> str:
     os.chdir("/mnt/k")
-    path = os.getcwd()
+    root_path = os.getcwd()
+    path_to_job_list = job_path.split("/")
 
     def get_subfolders(path: str) -> list:
         return [f.name for f in os.scandir(path) if f.is_dir()]
 
-    subfolders = get_subfolders(path)
+    subfolders = get_subfolders(root_path)
+
+    for folder in path_to_job_list:
+        subfolders = get_subfolders(folder)
 
     if name not in subfolders:
 
