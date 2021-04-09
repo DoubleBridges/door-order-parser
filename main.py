@@ -1,5 +1,4 @@
 import sys
-from icecream import ic
 
 from parser.parser import JobSummary
 from report_writer.report_writer import generate_order
@@ -18,9 +17,8 @@ except FileNotFoundError:
     print("Please add a door report in the Door Orders folder")
 
 else:
-    ic(job)
     for style in job.door_styles:
-        generate_order(job, path, style.name, style.species, style.doors, style.drawers)
+        generate_order(job, path, style, style.doors, style.drawers)
         print(f"Generated {job.name}-{style}.pdf in Job Files/{job_name}/Door Orders")
 
 sys.exit()

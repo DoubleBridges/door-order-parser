@@ -1,5 +1,4 @@
 import os
-from icecream import ic
 
 
 def get_dest_path(job_path: str) -> str:
@@ -35,7 +34,6 @@ def get_dest_path(job_path: str) -> str:
             return FileNotFoundError
 
     else:
-        ic(os.getcwd())
         os.chdir(f"{root_path}/Door Orders")
         path = os.getcwd()
 
