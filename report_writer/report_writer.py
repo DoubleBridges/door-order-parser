@@ -349,7 +349,7 @@ def generate_order(job, path, d_style, species, doors=[], drawers=[]):
                     self.size_box_width / 2
                 )
                 self.canv.drawCentredString(
-                    self.string_center, 0.25 * self.height, self.dr_size
+                    self.string_center, 0.25 * self.height, self.dwr_size
                 )
 
     def build_pdf(path, name, door_list, drawer_list):

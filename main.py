@@ -12,14 +12,15 @@ except IndexError:
 
 try:
     path = get_dest_path(job_path)
-    # job = JobSummary(f"{path}/PSReport.pdf", job_name)
+    job_name = job_path.split("/")[-1]
+    job = JobSummary(f"{path}/PSReport.pdf", job_name)
 except FileNotFoundError:
     print("Please add a door report in the Door Orders folder")
 
-# else:
-#     ic(job)
-#     for style in job.door_styles:
-#         generate_order(job, path, style.name, style.species, style.doors, style.drawers)
-#         print(f"Generated {job.name}-{style}.pdf in Job Files/{job_name}/Door Orders")
+else:
+    ic(job)
+    for style in job.door_styles:
+        generate_order(job, path, style.name, style.species, style.doors, style.drawers)
+        print(f"Generated {job.name}-{style}.pdf in Job Files/{job_name}/Door Orders")
 
 sys.exit()
