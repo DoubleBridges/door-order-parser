@@ -1,4 +1,5 @@
 import os
+from icecream import ic
 
 
 def get_dest_path(job_path: str) -> str:
@@ -12,30 +13,30 @@ def get_dest_path(job_path: str) -> str:
     subfolders = get_subfolders(root_path)
 
     for folder in path_to_job_list:
-        subfolders = get_subfolders(folder)
+        subfolders = get_subfolders(f"{root_path}/{folder}")
+        root_path = f"{root_path}/{folder}"
 
-    if name not in subfolders:
+    if "Door Orders" not in subfolders:
 
         print(
             """
-        Job folder does not exist.
-        Would you like to create one and add a Door Orders directory?
+        Door Orders folder does not exist in this job.
+        Would you like to create one?
         """
         )
 
         response = input("Y/N\n")
 
         if response.lower() == "y":
-            order_path = f"{name}/Door Orders"
-            os.mkdir(name)
-            os.mkdir(order_path)
-            os.chdir(order_path)
+            os.mkdir("Door Orders")
+            os.chdir("Door Orders")
             path = os.getcwd()
         else:
             return FileNotFoundError
 
     else:
-        os.chdir(f"{name}/Door Orders")
+        ic(os.getcwd())
+        os.chdir(f"{root_path}/Door Orders")
         path = os.getcwd()
 
     return path
