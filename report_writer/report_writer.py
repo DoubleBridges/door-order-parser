@@ -5,7 +5,7 @@ from reportlab.lib.units import inch
 from reportlab.platypus.flowables import Flowable
 
 
-def generate_order(job, path, d_style, doors=[], drawers=[]):
+def generate_order(job, path, door_style, doors=[], drawers=[]):
     PAGE_HEIGHT = defaultPageSize[1]
     PAGE_WIDTH = defaultPageSize[0]
     LEFT_MARGIN = 30
@@ -13,10 +13,12 @@ def generate_order(job, path, d_style, doors=[], drawers=[]):
     BACKGROUND_COLOR = (33 / 255, 80 / 255, 156 / 255)
     CURSOR_HEIGHT = PAGE_HEIGHT - 60
     INPUT_HEIGHT = LINE_HEIGHT - (LINE_HEIGHT * 0.1)
-    SPECIES = d_style.split("-")[-1]
-    STYLE = d_style.split("-")[0]
-    TOTAL_DRS = job.door_styles[d_style]["door_count"]
-    TOTAL_DWRS = job.door_styles[d_style]["drawer_count"]
+    SPECIES = door_style.species
+    STYLE = door_style.name
+    INSIDE_PROFILE = door_style.inside_profile
+    OUTSIDE_PROFILE = door_style.outside_profile
+    TOTAL_DRS = len(doors)
+    TOTAL_DWRS = len(drawers)
 
     def myFirstPage(c, doc):
         cursor = CURSOR_HEIGHT
@@ -61,7 +63,7 @@ def generate_order(job, path, d_style, doors=[], drawers=[]):
             height=INPUT_HEIGHT,
             width=(PAGE_WIDTH / 2) - LEFT_MARGIN - (LEFT_MARGIN / 2) - 60,
             borderWidth=0,
-            fillColor=([1, 1, 1]),
+            # fillColor=([1, 1, 1]),
             relative=True,
         )
         c.drawString((PAGE_WIDTH / 2) + (LEFT_MARGIN / 2), cursor, "Comments : ")
@@ -74,18 +76,18 @@ def generate_order(job, path, d_style, doors=[], drawers=[]):
             cursor,
         )
         cursor -= LINE_HEIGHT
-        c.drawString(LEFT_MARGIN, cursor, f"Inside Profile : ")
-        c.acroForm.textfield(
-            x=LEFT_MARGIN + 78,
-            y=cursor - 4,
-            name="inside_profile",
-            value=" N/A ",
-            height=INPUT_HEIGHT,
-            width=(PAGE_WIDTH / 2) - LEFT_MARGIN - (LEFT_MARGIN / 2) - 98,
-            borderWidth=0,
-            fillColor=([1, 1, 1]),
-            relative=True,
-        )
+        c.drawString(LEFT_MARGIN, cursor, f"Inside Profile : {INSIDE_PROFILE}")
+        # c.acroForm.textfield(
+        #     x=LEFT_MARGIN + 78,
+        #     y=cursor - 4,
+        #     name="inside_profile",
+        #     value=" N/A ",
+        #     height=INPUT_HEIGHT,
+        #     width=(PAGE_WIDTH / 2) - LEFT_MARGIN - (LEFT_MARGIN / 2) - 98,
+        #     borderWidth=0,
+        #     # fillColor=([1, 1, 1]),
+        #     relative=True,
+        # )
         c.line(
             (PAGE_WIDTH / 2) + (LEFT_MARGIN / 2),
             cursor,
@@ -93,18 +95,18 @@ def generate_order(job, path, d_style, doors=[], drawers=[]):
             cursor,
         )
         cursor -= LINE_HEIGHT
-        c.drawString(LEFT_MARGIN, cursor, f"Outside Profile : ")
-        c.acroForm.textfield(
-            x=LEFT_MARGIN + 88,
-            y=cursor - 4,
-            name="outside_profile",
-            value=" N/A ",
-            height=INPUT_HEIGHT,
-            width=(PAGE_WIDTH / 2) - LEFT_MARGIN - (LEFT_MARGIN / 2) - 108,
-            borderWidth=0,
-            fillColor=([1, 1, 1]),
-            relative=True,
-        )
+        c.drawString(LEFT_MARGIN, cursor, f"Outside Profile : {OUTSIDE_PROFILE}")
+        # c.acroForm.textfield(
+        #     x=LEFT_MARGIN + 88,
+        #     y=cursor - 4,
+        #     name="outside_profile",
+        #     value=" N/A ",
+        #     height=INPUT_HEIGHT,
+        #     width=(PAGE_WIDTH / 2) - LEFT_MARGIN - (LEFT_MARGIN / 2) - 108,
+        #     borderWidth=0,
+        #     # fillColor=([1, 1, 1]),
+        #     relative=True,
+        # )
         c.line(
             (PAGE_WIDTH / 2) + (LEFT_MARGIN / 2),
             cursor,
@@ -121,7 +123,7 @@ def generate_order(job, path, d_style, doors=[], drawers=[]):
             height=INPUT_HEIGHT,
             width=(PAGE_WIDTH / 2) - LEFT_MARGIN - (LEFT_MARGIN / 2) - 82,
             borderWidth=0,
-            fillColor=([1, 1, 1]),
+            # fillColor=([1, 1, 1]),
             relative=True,
         )
         c.setFont("Helvetica-Bold", 12)
@@ -134,7 +136,7 @@ def generate_order(job, path, d_style, doors=[], drawers=[]):
             height=INPUT_HEIGHT,
             width=(PAGE_WIDTH / 2) - LEFT_MARGIN - (LEFT_MARGIN / 2) - 92,
             borderWidth=0,
-            fillColor=([1, 1, 1]),
+            # fillColor=([1, 1, 1]),
             relative=True,
         )
         c.setFont("Helvetica", 12)
@@ -151,7 +153,7 @@ def generate_order(job, path, d_style, doors=[], drawers=[]):
             height=INPUT_HEIGHT,
             width=(PAGE_WIDTH / 2) - LEFT_MARGIN - (LEFT_MARGIN / 2) - 87,
             borderWidth=0,
-            fillColor=([1, 1, 1]),
+            # fillColor=([1, 1, 1]),
             relative=True,
         )
         cursor -= LINE_HEIGHT
@@ -169,7 +171,7 @@ def generate_order(job, path, d_style, doors=[], drawers=[]):
             height=INPUT_HEIGHT,
             width=30,
             borderWidth=0,
-            fillColor=([1, 1, 1]),
+            # fillColor=([1, 1, 1]),
             relative=True,
         )
         c.acroForm.textfield(
@@ -180,7 +182,7 @@ def generate_order(job, path, d_style, doors=[], drawers=[]):
             height=INPUT_HEIGHT,
             width=30,
             borderWidth=0,
-            fillColor=([1, 1, 1]),
+            # fillColor=([1, 1, 1]),
             relative=True,
         )
         cursor -= 12
@@ -326,7 +328,7 @@ def generate_order(job, path, d_style, doors=[], drawers=[]):
                 self.string_center, 0.25 * self.height, self.dr_size
             )
             # Drawer
-            if self.dwr_qty != "" and self.dwr_size != None:
+            if self.dwr_qty != "" and self.dwr_size != "":
                 self.canv.rect(
                     self.second_column_offset + self.qty_box_x,
                     0,
@@ -349,11 +351,11 @@ def generate_order(job, path, d_style, doors=[], drawers=[]):
                     self.size_box_width / 2
                 )
                 self.canv.drawCentredString(
-                    self.string_center, 0.25 * self.height, self.dr_size
+                    self.string_center, 0.25 * self.height, self.dwr_size
                 )
 
     def build_pdf(path, name, door_list, drawer_list):
-        doc = SimpleDocTemplate(f"{path}/{name}-{d_style}.pdf")
+        doc = SimpleDocTemplate(f"{path}/{name}-{STYLE}.pdf")
         Story = [Spacer(1, 3.11 * inch)]
         num_of_doors = len(door_list)
         num_of_drawers = len(drawer_list)
@@ -361,12 +363,12 @@ def generate_order(job, path, d_style, doors=[], drawers=[]):
 
         for i in range(0, num_of_entries):
             try:
-                door_qty, door_size = door_list[i][0], door_list[i][1]
+                door_qty, door_size = door_list[i]["qty"], door_list[i]["size"]
             except IndexError:
                 door_qty, door_size = "", ""
 
             try:
-                drawer_qty, drawer_size = drawer_list[i][0], drawer_list[i][1]
+                drawer_qty, drawer_size = drawer_list[i]["qty"], drawer_list[i]["size"]
             except IndexError:
                 drawer_qty, drawer_size = "", ""
 
